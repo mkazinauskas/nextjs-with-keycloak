@@ -1,14 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-
-interface SessionPayload {
-  authenticated: boolean;
-  expiresAt?: number;
-  scope?: string;
-  profile?: Record<string, unknown>;
-}
+import { useOidcSession } from "@/lib/oidc/use-session";
 
 const containerClasses =
   "mx-auto min-h-screen max-w-4xl space-y-10 px-6 py-16 text-slate-100";
@@ -19,35 +12,7 @@ const cardClasses =
 const headingClasses = "text-3xl font-semibold text-white";
 
 export default function DashboardPage() {
-  const [session, setSession] = useState<SessionPayload | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadSession = async () => {
-      try {
-        const response = await fetch("/api/oidc/session", {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Session lookup failed (${response.status})`);
-        }
-
-        const payload = (await response.json()) as SessionPayload;
-        setSession(payload);
-        console.log("respomnse", payload);
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Unknown session error";
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void loadSession();
-  }, []);
+  const { data: session, loading, error } = useOidcSession();
 
   const startLogout = () => {
     window.location.href = "/api/oidc/logout?returnTo=/";
