@@ -1,8 +1,6 @@
-import { OidcClient } from "oidc-client-ts";
 import { NextRequest, NextResponse } from "next/server";
 
-import { buildClientSettings } from "@/lib/oidc/config";
-import { CookieStateStore } from "@/lib/oidc/state-store";
+import { initOidcClient, redirectWithState } from "@/lib/oidc/client";
 import { clearSession, readSession } from "@/lib/oidc/session";
 import { sanitizeReturnTo } from "@/lib/oidc/url";
 
@@ -15,19 +13,14 @@ export async function GET(request: NextRequest) {
       request.nextUrl.searchParams.get("returnTo"),
     );
 
-    const stateStore = new CookieStateStore(request.cookies);
-    const client = new OidcClient({
-      ...buildClientSettings(origin),
-      stateStore,
-    });
+    const { client, stateStore } = initOidcClient(request);
 
     const signoutRequest = await client.createSignoutRequest({
       id_token_hint: session?.idToken,
       state: { returnTo },
     });
 
-    const response = NextResponse.redirect(signoutRequest.url);
-    stateStore.commit(response.cookies);
+    const response = redirectWithState(signoutRequest.url, stateStore);
     clearSession(response);
     return response;
   } catch (error) {

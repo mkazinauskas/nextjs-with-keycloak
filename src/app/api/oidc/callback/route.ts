@@ -1,18 +1,12 @@
-import { OidcClient } from "oidc-client-ts";
 import { NextRequest, NextResponse } from "next/server";
 
-import { buildClientSettings } from "@/lib/oidc/config";
-import { CookieStateStore } from "@/lib/oidc/state-store";
+import { initOidcClient, redirectWithState } from "@/lib/oidc/client";
 import { writeSession } from "@/lib/oidc/session";
 
 export async function GET(request: NextRequest) {
   try {
     const origin = request.nextUrl.origin;
-    const stateStore = new CookieStateStore(request.cookies);
-    const client = new OidcClient({
-      ...buildClientSettings(origin),
-      stateStore,
-    });
+    const { client, stateStore } = initOidcClient(request);
 
     const signinResponse = await client.processSigninResponse(request.url);
 
@@ -27,10 +21,7 @@ export async function GET(request: NextRequest) {
       | undefined;
 
     const redirectPath = userState?.returnTo ?? "/";
-    const target = new URL(redirectPath, origin);
-
-    const response = NextResponse.redirect(target);
-    stateStore.commit(response.cookies);
+    const response = redirectWithState(new URL(redirectPath, origin), stateStore);
 
     const now = Math.floor(Date.now() / 1000);
     const expiresAt =

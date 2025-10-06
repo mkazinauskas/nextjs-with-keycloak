@@ -1,17 +1,11 @@
-import { OidcClient } from "oidc-client-ts";
 import { NextRequest, NextResponse } from "next/server";
 
-import { buildClientSettings } from "@/lib/oidc/config";
-import { CookieStateStore } from "@/lib/oidc/state-store";
+import { initOidcClient, redirectWithState } from "@/lib/oidc/client";
 
 export async function GET(request: NextRequest) {
   try {
     const origin = request.nextUrl.origin;
-    const stateStore = new CookieStateStore(request.cookies);
-    const client = new OidcClient({
-      ...buildClientSettings(origin),
-      stateStore,
-    });
+    const { client, stateStore } = initOidcClient(request);
 
     const signoutResponse = await client.processSignoutResponse(request.url);
 
@@ -25,9 +19,7 @@ export async function GET(request: NextRequest) {
       | { returnTo?: string }
       | undefined;
     const redirectPath = userState?.returnTo ?? "/";
-    const response = NextResponse.redirect(new URL(redirectPath, origin));
-    stateStore.commit(response.cookies);
-    return response;
+    return redirectWithState(new URL(redirectPath, origin), stateStore);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to process logout";
