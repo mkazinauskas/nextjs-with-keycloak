@@ -63,10 +63,16 @@ export default function Home() {
           </div>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <Link
-              href="/dashboard"
+              href="/login"
               className="inline-flex items-center justify-center rounded-full bg-cyan-400 px-6 py-3 text-base font-medium text-slate-950 transition hover:bg-cyan-300"
             >
-              View the protected app
+              Start Keycloak login
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center rounded-full border border-cyan-400/60 px-6 py-3 text-base font-medium text-cyan-200 transition hover:border-cyan-300 hover:text-white"
+            >
+              Open the protected dashboard
             </Link>
             <a
               href="https://www.keycloak.org/docs"
@@ -139,6 +145,62 @@ export default function Home() {
               <p className="text-sm text-slate-300">{feature.description}</p>
             </div>
           ))}
+        </section>
+
+        <section className="grid gap-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+          <div className="space-y-4">
+            <span className="rounded-full border border-cyan-400/50 bg-cyan-400/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-cyan-200">
+              Try it now
+            </span>
+            <h2 className="text-3xl font-semibold text-white sm:text-4xl">
+              Run the end-to-end OIDC flow without leaving this starter.
+            </h2>
+            <p className="text-sm text-slate-300 sm:text-base">
+              Kick off a login from the landing page, land inside the protected dashboard, then inspect the API session
+              payload or trigger logout. Everything is wired to the `oidc-client-ts` powered routes under{" "}
+              <code className="rounded bg-slate-950/70 px-2 py-1 text-xs text-cyan-200">/api/oidc</code>.
+            </p>
+          </div>
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 p-5">
+              <h3 className="text-base font-semibold text-white">1. Start the login flow</h3>
+              <p className="mt-2 text-sm text-slate-300">
+                Redirects through Keycloak and returns with secure, HTTP-only cookies.
+              </p>
+              <Link
+                href="/login"
+                className="mt-4 inline-flex items-center justify-center rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
+              >
+                Go to /login
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 p-5">
+              <h3 className="text-base font-semibold text-white">2. Inspect the session</h3>
+              <p className="mt-2 text-sm text-slate-300">
+                Calls <code className="rounded bg-slate-900 px-1.5 py-0.5 text-[0.7rem]">GET /api/oidc/session</code> to
+                reveal active scopes, expiry, and user profile.
+              </p>
+              <Link
+                href="/dashboard"
+                className="mt-4 inline-flex items-center justify-center rounded-full border border-cyan-400/60 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300 hover:text-white"
+              >
+                Open dashboard
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 p-5">
+              <h3 className="text-base font-semibold text-white">3. Sign out everywhere</h3>
+              <p className="mt-2 text-sm text-slate-300">
+                Hits <code className="rounded bg-slate-900 px-1.5 py-0.5 text-[0.7rem]">GET /api/oidc/logout</code> and
+                returns via the logout callback with cookies cleared.
+              </p>
+              <a
+                href="/api/oidc/logout"
+                className="mt-4 inline-flex items-center justify-center rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white"
+              >
+                Trigger logout
+              </a>
+            </div>
+          </div>
         </section>
 
         <section className="grid gap-10 lg:grid-cols-[1fr_1.3fr] lg:items-start">
