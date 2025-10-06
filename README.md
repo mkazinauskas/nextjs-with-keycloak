@@ -20,6 +20,23 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## OIDC API integration
+
+The application exposes a small set of API routes backed by [`oidc-client-ts`](https://github.com/authts/oidc-client-ts) to handle the authorization code flow against Keycloak (or any compliant OIDC provider).
+
+1. Copy `.env.example` to `.env.local` and fill in your realm details (authority, client id, optional secret).
+2. Start the identity stack with `docker compose up -d` to boot the local Keycloak instance.
+3. Visit [`/login`](http://localhost:3000/login) and use the **Continue with Keycloak** button to trigger the code flow (`/api/oidc/login`).
+4. After authenticating, you will land on [`/dashboard`](http://localhost:3000/dashboard) which reads the active session via `/api/oidc/session` and provides a **Sign out** button (`/api/oidc/logout`).
+
+The relevant server routes live under `src/app/api/oidc/*`:
+
+- `GET /api/oidc/login` – creates the authorization request and redirects to Keycloak.
+- `GET /api/oidc/callback` – processes the authorization response and stores the resulting tokens inside an HTTP-only session cookie.
+- `GET /api/oidc/logout` – initiates RP-initiated logout and clears the session.
+- `GET /api/oidc/logout/callback` – finalizes logout and returns users to the requested location.
+- `GET /api/oidc/session` – exposes non-sensitive session metadata for client-side checks.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
