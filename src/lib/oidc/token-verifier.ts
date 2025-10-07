@@ -1,3 +1,4 @@
+import type { NextRequest } from "next/server";
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
 
 const AUTHORITY = process.env.NEXT_PUBLIC_OIDC_AUTHORITY;
@@ -38,4 +39,31 @@ export async function verifyAccessToken(token: string): Promise<VerifiedToken> {
   });
 
   return result.payload as VerifiedToken;
+}
+
+export class UnauthorizedError extends Error {
+  public constructor(message = "Unauthorized") {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
+export async function authenticateRequest(request: NextRequest): Promise<VerifiedToken> {
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader) {
+    throw new UnauthorizedError("Missing Authorization header");
+  }
+
+  const [, token] = authHeader.match(/^Bearer\\s+(.+)$/i) ?? [];
+  if (!token) {
+    throw new UnauthorizedError("Authorization header must use Bearer scheme");
+  }
+
+  try {
+    return await verifyAccessToken(token);
+  } catch (error) {
+    throw new UnauthorizedError(
+      error instanceof Error ? error.message : "Failed to verify token",
+    );
+  }
 }

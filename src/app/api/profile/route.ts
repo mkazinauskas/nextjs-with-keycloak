@@ -1,27 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { verifyAccessToken } from "@/lib/oidc/token-verifier";
-
-function extractBearerToken(authHeader: string | null): string | null {
-  if (!authHeader) {
-    return null;
-  }
-
-  const [, token] = authHeader.match(/^Bearer\s+(.+)$/i) ?? [];
-  return token ?? null;
-}
+import { authenticateRequest } from "@/lib/oidc/token-verifier";
 
 export async function GET(request: NextRequest) {
-  const token = extractBearerToken(request.headers.get("authorization"));
-  if (!token) {
-    return NextResponse.json(
-      { error: "Missing bearer token" },
-      { status: 401 },
-    );
-  }
-
   try {
-    const payload = await verifyAccessToken(token);
+    const payload = await authenticateRequest(request);
 
     return NextResponse.json(
       {
@@ -40,8 +23,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.log("Failed to verify token", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to verify token";
+    const message = error instanceof Error ? error.message : "Unauthorized";
     return NextResponse.json({ error: message }, { status: 401 });
   }
 }
