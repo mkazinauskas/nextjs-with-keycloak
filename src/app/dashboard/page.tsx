@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useAuth } from "react-oidc-context";
 import { useOidcSession } from "@/lib/oidc/use-session";
 
 const containerClasses =
@@ -12,10 +13,12 @@ const cardClasses =
 const headingClasses = "text-3xl font-semibold text-white";
 
 export default function DashboardPage() {
+  const auth = useAuth();
   const { data: session, loading, error } = useOidcSession();
+  const loggingOut = auth.activeNavigator === "signoutRedirect";
 
   const startLogout = () => {
-    window.location.href = "/api/oidc/logout?returnTo=/";
+    void auth.signoutRedirect({ state: { returnTo: "/" } });
   };
 
   return (
@@ -27,8 +30,11 @@ export default function DashboardPage() {
           </p>
           <h1 className={headingClasses}>Dashboard</h1>
           <p className="text-sm text-slate-300">
-            This page calls the `/api/oidc/session` endpoint to determine the
-            currently authenticated user and exposes a test logout flow.
+            This page reflects the authenticated state exposed by{" "}
+            <code className="rounded bg-slate-900 px-1.5 py-0.5 text-[0.7rem]">
+              react-oidc-context
+            </code>{" "}
+            and lets you sign out via Keycloak&apos;s RP-initiated logout.
           </p>
         </header>
 
@@ -93,7 +99,10 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={startLogout}
-                className="inline-flex rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white"
+                disabled={loggingOut}
+                className={`inline-flex rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white ${
+                  loggingOut ? "cursor-not-allowed opacity-60" : ""
+                }`}
               >
                 Sign out
               </button>

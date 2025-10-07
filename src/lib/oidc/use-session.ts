@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useAuth } from "react-oidc-context";
 
 export interface SessionPayload {
   authenticated: boolean;
@@ -15,49 +16,33 @@ export interface SessionQuery {
   refresh: () => Promise<void>;
 }
 
-export function useOidcSession(options: { auto?: boolean } = {}): SessionQuery {
-  const auto = options.auto ?? true;
-  const [data, setData] = useState<SessionPayload | null>(null);
-  const [loading, setLoading] = useState<boolean>(auto);
-  const [error, setError] = useState<string | null>(null);
+export function useOidcSession(): SessionQuery {
+  const auth = useAuth();
 
   const refresh = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
     try {
-      const response = await fetch("/api/oidc/session", {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Session lookup failed (${response.status})`);
+      await auth.signinSilent();
+    } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Failed to refresh session silently", error);
       }
-
-      const payload = (await response.json()) as SessionPayload;
-      setData(payload);
-    } catch (err) {
-      setData(null);
-      const message =
-        err instanceof Error ? err.message : "Unknown session error";
-      setError(message);
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [auth]);
 
-  useEffect(() => {
-    if (!auto) {
-      return;
-    }
-    void refresh();
-  }, [auto, refresh]);
+  const data: SessionPayload | null = auth.user
+    ? {
+        authenticated: true,
+        expiresAt: auth.user.expires_at ?? undefined,
+        scope: auth.user.scope ?? undefined,
+        profile: auth.user.profile ?? undefined,
+      }
+    : { authenticated: false };
 
   return {
     data,
-    loading,
-    error,
-    authenticated: Boolean(data?.authenticated),
+    loading: auth.isLoading,
+    error: auth.error?.message ?? null,
+    authenticated: auth.isAuthenticated,
     refresh,
   };
 }

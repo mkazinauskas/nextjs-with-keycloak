@@ -156,9 +156,10 @@ export default function Home() {
               Run the end-to-end OIDC flow without leaving this starter.
             </h2>
             <p className="text-sm text-slate-300 sm:text-base">
-              Kick off a login from the landing page, land inside the protected dashboard, then inspect the API session
-              payload or trigger logout. Everything is wired to the `oidc-client-ts` powered routes under{" "}
-              <code className="rounded bg-slate-950/70 px-2 py-1 text-xs text-cyan-200">/api/oidc</code>.
+            Kick off a login from the landing page, land inside the protected dashboard, then inspect the live session
+            state exposed by{" "}
+            <code className="rounded bg-slate-950/70 px-2 py-1 text-xs text-cyan-200">react-oidc-context</code>. No
+            custom backend glue is required—the provider handles callbacks, silent renew, and logout redirects.
             </p>
           </div>
           <div className="space-y-4">
@@ -177,8 +178,7 @@ export default function Home() {
             <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 p-5">
               <h3 className="text-base font-semibold text-white">2. Inspect the session</h3>
               <p className="mt-2 text-sm text-slate-300">
-                Calls <code className="rounded bg-slate-900 px-1.5 py-0.5 text-[0.7rem]">GET /api/oidc/session</code> to
-                reveal active scopes, expiry, and user profile.
+                Check the session card sourced from the context: scopes, expiry, and profile fields update automatically.
               </p>
               <Link
                 href="/dashboard"
@@ -190,15 +190,8 @@ export default function Home() {
             <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 p-5">
               <h3 className="text-base font-semibold text-white">3. Sign out everywhere</h3>
               <p className="mt-2 text-sm text-slate-300">
-                Hits <code className="rounded bg-slate-900 px-1.5 py-0.5 text-[0.7rem]">GET /api/oidc/logout</code> and
-                returns via the logout callback with cookies cleared.
+                Use the Sign out button on the dashboard to invoke `signoutRedirect` and bounce back to the landing page.
               </p>
-              <a
-                href="/api/oidc/logout"
-                className="mt-4 inline-flex items-center justify-center rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white"
-              >
-                Trigger logout
-              </a>
             </div>
           </div>
         </section>
