@@ -27,7 +27,12 @@ Authentication is handled entirely in the browser via [`react-oidc-context`](htt
 1. Copy `.env.example` to `.env.local` and provide the public URLs for your Keycloak realm and client (`NEXT_PUBLIC_OIDC_*`).
 2. Start the identity stack with `docker compose up -d` to boot the local Keycloak instance.
 3. Visit [`/login`](http://localhost:3000/login) and click **Continue with Keycloak** to invoke `signinRedirect`. The callback route (`/auth/callback`) is processed by the provider and returns you to the requested location.
-4. Open [`/dashboard`](http://localhost:3000/dashboard) to inspect the live session exposed by `useAuth()`/`useOidcSession()`, or sign out via the **Sign out** button which triggers `signoutRedirect`.
+4. Open [`/dashboard`](http://localhost:3000/dashboard) to inspect the live session exposed by `useAuth()`/`useOidcSession()`, exercise the **Call secured API** example (which invokes `/api/profile` with your bearer token), or sign out via the **Sign out** button which triggers `signoutRedirect`.
+
+### Secured API example
+
+- `GET /api/profile` validates the `Authorization: Bearer <token>` header against Keycloak&apos;s JWKS using [`jose`](https://github.com/panva/jose) and returns basic profile fields when the token is valid. The dashboard includes a sample client call wired to this endpoint.
+  - If your access tokens carry a different `aud` claim (e.g. `account`), set `NEXT_PUBLIC_OIDC_AUDIENCE` with a comma-separated list of acceptable audiences so verification succeeds.
 
 The provider is initialised in `src/components/oidc-provider.tsx`, and client settings (authority, client id, scopes, redirect URIs) live in `src/lib/oidc/settings.ts`.
 

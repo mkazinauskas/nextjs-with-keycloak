@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "react-oidc-context";
 import { useOidcSession } from "@/lib/oidc/use-session";
@@ -16,9 +17,45 @@ export default function DashboardPage() {
   const auth = useAuth();
   const { data: session, loading, error } = useOidcSession();
   const loggingOut = auth.activeNavigator === "signoutRedirect";
+  const [apiResponse, setApiResponse] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [callingApi, setCallingApi] = useState(false);
 
   const startLogout = () => {
     void auth.signoutRedirect({ state: { returnTo: "/" } });
+  };
+
+  const callProtectedApi = async () => {
+    if (!auth.user?.access_token) {
+      return;
+    }
+
+    setCallingApi(true);
+    setApiError(null);
+    setApiResponse(null);
+
+    try {
+      const response = await fetch("/api/profile", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${auth.user.access_token}`,
+        },
+      });
+
+      const body = await response.json();
+
+      if (!response.ok) {
+        throw new Error(body.error ?? "Unknown API error");
+      }
+
+      setApiResponse(JSON.stringify(body, null, 2));
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to call protected API";
+      setApiError(message);
+    } finally {
+      setCallingApi(false);
+    }
   };
 
   return (
@@ -106,6 +143,28 @@ export default function DashboardPage() {
               >
                 Sign out
               </button>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={callProtectedApi}
+                  disabled={!auth.user?.access_token || callingApi}
+                  className={`inline-flex rounded-full border border-cyan-400/60 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300 hover:text-white ${
+                    !auth.user?.access_token || callingApi
+                      ? "cursor-not-allowed opacity-60"
+                      : ""
+                  }`}
+                >
+                  {callingApi ? "Calling secured API…" : "Call secured API"}
+                </button>
+                {apiError && (
+                  <p className="text-sm text-red-300">API error: {apiError}</p>
+                )}
+                {apiResponse && (
+                  <pre className="max-h-60 overflow-auto rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-left text-xs text-slate-300">
+                    {apiResponse}
+                  </pre>
+                )}
+              </div>
             </div>
           )}
         </section>
