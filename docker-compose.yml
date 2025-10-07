@@ -3,7 +3,7 @@ version: "3.9"
 services:
   keycloak_web:
     image: quay.io/keycloak/keycloak:26.4
-    command: start-dev
+    command: start-dev --import-realm
     restart: unless-stopped
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
@@ -25,6 +25,7 @@ services:
         condition: service_healthy
     volumes:
       - ./.docker/keycloak_data:/opt/keycloak/data
+      - ./docker/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
 
   keycloak_db:
     image: postgres:16

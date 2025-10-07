@@ -124,6 +124,7 @@ export function requireRealmRole(
   role: string | string[],
 ): void {
   const roles = getRealmRoles(token);
+  console.log(roles)
   const requiredList = Array.isArray(role) ? role : [role];
   const missing = requiredList.filter((item) => !roles.has(item));
   if (missing.length > 0) {
