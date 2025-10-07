@@ -33,6 +33,8 @@ Authentication is handled entirely in the browser via [`react-oidc-context`](htt
 
 - `GET /api/profile` validates the `Authorization: Bearer <token>` header against Keycloak&apos;s JWKS using [`jose`](https://github.com/panva/jose) and returns basic profile fields when the token is valid. The dashboard includes a sample client call wired to this endpoint.
   - If your access tokens carry a different `aud` claim (e.g. `account`), set `NEXT_PUBLIC_OIDC_AUDIENCE` with a comma-separated list of acceptable audiences so verification succeeds.
+  - Bootstrap checklist (matches `.env.example`): place your realm export in `docker/realm-export.json`, clear `.docker/keycloak_data` and `.docker/keycloak_db` if you want a clean import, then run `docker compose up -d` to start Keycloak with the realm pre-loaded.
+  - Create at least one user in the realm (assign the `api_user` role and `profile.read` scope) so you can sign in via `/login`.
 
 The provider is initialised in `src/components/oidc-provider.tsx`, and client settings (authority, client id, scopes, redirect URIs) live in `src/lib/oidc/settings.ts`.
 
