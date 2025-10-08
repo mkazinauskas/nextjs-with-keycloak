@@ -1,4 +1,5 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app) and keycloak-powered authentication. It's a good starting point for a Next.js app with authentication.
+Please not that this project is experimental and generated with Codex AI
 
 ## Getting Started
 
